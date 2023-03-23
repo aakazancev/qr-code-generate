@@ -1,30 +1,106 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div id="app">
+    <h1>Генератор QR-кода SVG</h1>
+    <div>
+      <label for="inputText">Введите текст для QR-кода:</label>
+      <input id="inputText" class="input" v-model="text" />
+    </div>
+    <div v-if="text" v-html="svgQRCode" />
+    <div class="btn-group">
+      <button v-if="text" @click="downloadSVG">Скачать SVG</button>
+      <button v-if="text" @click="downloadPNG">Скачать PNG</button>
+    </div>
+
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<script>
+import QRCode from 'qrcode-svg';
+
+export default {
+  data() {
+    return {
+      text: '',
+    };
+  },
+  computed: {
+    svgQRCode() {
+      const qrcode = new QRCode({
+        content: this.text,
+        padding: 4,
+        width: 256,
+        height: 256,
+        color: '#000000',
+        background: '#ffffff',
+        ecl: 'H',
+      });
+
+      return qrcode.svg();
+    },
+  },
+  methods: {
+    async downloadSVG() {
+      const a = document.createElement('a');
+      a.href = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(this.svgQRCode)}`;
+      a.download = 'qr-code.svg';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    },
+    async downloadPNG() {
+      const img = new Image();
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(this.svgQRCode);
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = 'qr-code.png';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      };
+    },
+  },
+};
+</script>
+
+<style>
+#app {
+  text-align: center;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+*{
+  outline: none;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+.input{
+  display: block;
+  margin-inline: auto;
+  margin-top: 10px;
+  height: 56px;
+  border-radius: 12px;
+  border: 1px solid #f1f1f1;
+  max-width: 516px;
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  transition: .2s;
+}
+.input:hover{
+  border-color: #646cff;
+}
+.input:focus{
+  border-color: #646cff;
+}
+.btn-group{
+  display: flex;
+  gap: 16px;
+  justify-content: center;
 }
 </style>
