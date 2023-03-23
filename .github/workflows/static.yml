@@ -30,4 +30,4 @@ jobs:
         with:
           target_branch: gh-pages
           build_dir: dist
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
